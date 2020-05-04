@@ -39,18 +39,6 @@ object CustomerInfoFlatten extends SessionInit {
     }
   }
   
-   def getCustomerInfoDataFrame123(sprk:SparkSession) : DataFrame = {
-    val customerInfo = Try({
-      val customerFlat = sprk.read.format("CSV").option("header", true).option("mode", "DROPMALFORMED")
-        .csv("C:\\Users\\yuvas\\Azure_Study\\VISA\\EASy\\SOURCE\\input\\dob.csv")
-      customerFlat
-    })
-    customerInfo match {
-      case Success(v) => v
-      case Failure(issue) =>
-        throw new FileNotFoundException("FileNotFound for customer's info")
-    }
-  }
     val timesec = System.currentTimeMillis()
     val currentDate = new Date(timesec)
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
