@@ -24,35 +24,31 @@ object CustomerStatus extends SessionInit{
   
    def main(args:Array[String]) {
     
-    //Flatten_Customer_Info
+    /** Flatten Customer Info */
     val getCustomerInfoDataFrame = CustomerInfoFlatten.getCustomerInfoDataFrame(sprk)
-    val customer_call = CustomerInfoFlatten.callCustomerInfo(getCustomerInfoDataFrame)
+    val customerCall = CustomerInfoFlatten.callCustomerInfo(getCustomerInfoDataFrame)
     
-    //Flatten_Customer_Offer
+    /** Flatten Customer Offer Info */
     val getCustomerOfferDataFrame = CustomerOfferFlatten.getCustomerOfferDataFrame(sprk)
     val getWeeksOfYear = CustomerOfferFlatten.getWeeksOfYear(sprk)
-    val customer_offer_call = CustomerOfferFlatten.customerOfferCall(getCustomerOfferDataFrame,getWeeksOfYear)
-
-    //Flatten_Customer_Transaction
+    val customerOfferCall = CustomerOfferFlatten.customerOfferCall(getCustomerOfferDataFrame,getWeeksOfYear)
+    
+    /** Flatten Customer's Transaction */
     val getTransactionDataFrame = TransactionFlatten.getTransactionDataFrame(sprk)
     val transaction = TransactionFlatten.callCustomerTransaction(getTransactionDataFrame)
-    val transaction_res = CustomerUtilities.transaction_res(transaction,customer_call)
-
-    //Fetching_Customers_Weekly_Status
-    val customerWiseweeklyStatus = CustomerUtilities.customerWiseweeklyStatus(customer_call, customer_offer_call, transaction)
-
+    val customerTransaction = CustomerUtilities.customerTransactionResult(transaction,customerCall)
+    
+   /** Fetching each customer's weekly status */
+    val customerWiseweeklyStatus = CustomerUtilities.customerWiseweeklyStatus(customerCall, customerOfferCall, transaction)
     customerWiseweeklyStatus.show(10)
     
-    //Fetching_OverAll_Weekly_Status
+    /** Fetching overall weekly status */
     val customerOverAllWeeklyStatus = CustomerUtilities.customerOverAllWeeklyStatus(customerWiseweeklyStatus)
-
     customerOverAllWeeklyStatus.show(10)
 
-    //Fetching_AgeGroup_Transaction
-    val transactionOnAgeGroupWise = CustomerUtilities.transactionOnAgeGroupWise(transaction_res)
-    
+    /** Fetching customer's age group wise details */
+    val transactionOnAgeGroupWise = CustomerUtilities.transactionOnAgeGroupWise(customerTransaction)
     transactionOnAgeGroupWise.show(10)
-    
   }
   
 }

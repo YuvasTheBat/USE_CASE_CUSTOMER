@@ -20,9 +20,7 @@ class TransactionFlattenTest extends FunSuite with SessionInitTest {
         ,("5003","3","3001","store_02","10002","5000.00","2020-02-24")
         ,("5004","2","4001","store_01","10003","3000.00","2020-03-16")
         ,("5009","3","3001","store_02","10002","5000.00","2020-02-20")).toDF("transaction_id","customer_id","product_id","store_id","offer_id","sales","date")
-        
     val actual = TransactionFlatten.callCustomerTransaction(list_input)
-    
     assert(actual.count() > 0)
   }
   
@@ -32,9 +30,7 @@ class TransactionFlattenTest extends FunSuite with SessionInitTest {
         ,("5003","3","3001","store_02","10002","5000.00","2020-02-24")
         ,("5004","2","4001","store_01","10003","3000.00","2020-03-16")
         ,("5009","3","3001","store_02","10002","5000.00","2020-02-20")).toDF("transaction_id","customer_id","product_id","store_id","offer_id","sales","date")
-        
     val actual = TransactionFlatten.callCustomerTransaction(list_input)
-    
     assert(actual.columns.contains("sales_week_number") && actual.columns.contains("day_of_sales_week"))
   }
   

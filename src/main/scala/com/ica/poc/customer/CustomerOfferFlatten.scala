@@ -10,6 +10,8 @@ import org.apache.spark.sql.functions._
 import com.ica.poc.session.SessionInit
 import java.io.IOException
 import com.ica.poc.session.SessionInit
+import scala.util.{Try,Success,Failure}
+import java.io.FileNotFoundException
 
 /*
  * @author Yuvaraj Mani
@@ -21,50 +23,40 @@ import com.ica.poc.session.SessionInit
 object CustomerOfferFlatten extends SessionInit {
   
   def getCustomerOfferDataFrame(sprk:SparkSession) : DataFrame = {
-    var offer_flat: DataFrame = null
-    try {
-      offer_flat = sprk.read.format("CSV")
-        .option("header", true)
+   val customerOffer =  Try ({
+      val customerOfferFlat = sprk.read.format("CSV")
+        .option("header", true).option("mode", "DROPMALFORMED")
         .csv("C:\\Users\\yuvas\\Azure_Study\\VISA\\EASy\\SOURCE\\input\\offer.csv")
-    } catch {
-      case e: IOException => {
-        println("File Not Found")
-        println(e.printStackTrace())
-      }
+       customerOfferFlat 
+    })
+     customerOffer match {
+      case Success(v) => v
+      case Failure(issue) =>
+        throw new FileNotFoundException("FileNotFound For Customer Offers")
     }
-    return offer_flat
   }
   
   def getWeeksOfYear(sprk:SparkSession) : DataFrame = {
-    var number_tab: DataFrame = null
-    try {
-      number_tab = sprk.read.format("CSV")
+    val numberTab = Try ({
+     val numberTabForYear = sprk.read.format("CSV")
         .option("header", true)
         .csv("C:\\Users\\yuvas\\Azure_Study\\VISA\\EASy\\SOURCE\\input\\number.csv").select(col("number").alias("week_number").cast(IntegerType))
-    } catch {
-      case e: IOException => {
-        println("File Not Found")
-        println(e.printStackTrace())
-      }
+        numberTabForYear
+    })
+    numberTab match {
+      case Success(v) => v
+      case Failure(issue) =>
+        throw new FileNotFoundException("FileNotFound For Numbers Table")
     }
-    return number_tab
   }
   
-  def customerOfferCall(offer_flat:DataFrame,number_tab:DataFrame) : DataFrame = {
-    var offer_join_res: DataFrame = null
-    try {
-      val offer = offer_flat.withColumn("begin_week_number", date_format(col("begin_date"), "w").cast(IntegerType))
+  def customerOfferCall(offerFlat:DataFrame,numberTab:DataFrame) : DataFrame = {
+      val offer = offerFlat.withColumn("begin_week_number", date_format(col("begin_date"), "w").cast(IntegerType))
         .withColumn("end_week_number", date_format(col("end_date"), "w").cast(IntegerType))
 
-      offer_join_res = offer.join(number_tab, number_tab("week_number")
+     val customerOfferCall = offer.join(numberTab, numberTab("week_number")
         .between(offer("begin_week_number"), offer("end_week_number")))
         .select("week_number", "offer_id", "offer_name", "cust_id", "begin_date", "end_date", "begin_week_number", "end_week_number")
-    } catch {
-      case e: Exception => {
-        println("Exception in offer flatten dataframe")
-        println(e.printStackTrace())
-      }
-    }
-    return offer_join_res
+    customerOfferCall
   }
 }

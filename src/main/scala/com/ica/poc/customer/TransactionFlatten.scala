@@ -12,6 +12,8 @@ import java.sql.Date
 import java.text.SimpleDateFormat
 import java.io.IOException
 import com.ica.poc.session.SessionInit
+import scala.util.{Try,Success,Failure}
+import java.io.FileNotFoundException
 
 /*
  * @author Yuvaraj Mani
@@ -23,29 +25,21 @@ import com.ica.poc.session.SessionInit
 object TransactionFlatten extends SessionInit{
   
   def getTransactionDataFrame(sprk:SparkSession) : DataFrame = {
-    var transaction_flat: DataFrame = null
-    try {
-      transaction_flat = sprk.read.format("CSV").option("header", true)
+   val transaction = Try ({
+     val  transactionFlat = sprk.read.format("CSV").option("header", true).option("mode", "DROPMALFORMED")
         .csv("C:\\Users\\yuvas\\Azure_Study\\VISA\\EASy\\SOURCE\\input\\transaction.csv")
-    } catch {
-      case e: IOException => {
-        println("File Not Found For Transaction")
-        println(e.printStackTrace())
-      }
-    }
-    return transaction_flat
+        transactionFlat
+    })
+    transaction match {
+     case Success(v) => v
+     case Failure(issue) =>
+       throw new FileNotFoundException("FileNotFound for Customer Transaction")
+     
+   }
   }
-  def callCustomerTransaction(transaction_flat:DataFrame) : DataFrame = {
-    var transaction: DataFrame = null
-    try {
-      transaction = transaction_flat.withColumn("sales_week_number", date_format(col("date"), "w").cast(IntegerType))
+  def callCustomerTransaction(transactionFlat:DataFrame) : DataFrame = {
+      val transaction = transactionFlat.withColumn("sales_week_number", date_format(col("date"), "w").cast(IntegerType))
         .withColumn("day_of_sales_week", date_format(col("date"), "E"))
-    } catch {
-      case e: Exception => {
-        println("Exception in transaction dataframe")
-        println(e.printStackTrace())
-      }
-    }
     transaction
   }
 }
